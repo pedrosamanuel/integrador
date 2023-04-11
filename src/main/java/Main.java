@@ -107,7 +107,7 @@ public class Main {
             puntos = 0;
             for (int z = 0; z < cantRondas; z++) {
                 for (int j = 0; j < cantPartidos; j++) {
-                    puntos += personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(), personas.get(i).getPronosticos(j + 2 * cantPartidos).getResultado(), personas.get(i).getPuntos());
+                    puntos += personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(), personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos());
                 }
             }
             personas.get(i).setPuntos(puntos);
