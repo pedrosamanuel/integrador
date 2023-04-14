@@ -2,9 +2,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Ronda {
-    private int nro;
-
     private final List<Partido> partidos;
+    private int nro;
 
 
     public Ronda() {
