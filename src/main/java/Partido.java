@@ -12,14 +12,6 @@ public class Partido {
 
     }
 
-    public Partido() {
-        this.equipo1 = equipo1;
-        this.equipo2 = equipo2;
-        this.golesEquipo1 = golesEquipo1;
-        this.golesEquipo2 = golesEquipo2;
-
-    }
-
 
     ResultadoEnum resultado() {
         if (golesEquipo1 > golesEquipo2) {
