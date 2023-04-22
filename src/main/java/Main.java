@@ -1,113 +1,161 @@
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Introducir la ruta del archivo \"resultados\"");
-        Path dirResultados = Paths.get(sc.nextLine());
-        System.out.println("Introducir la ruta del archivo \"pronósticos\"");
-        Path dirPronosticos = Paths.get(sc.nextLine());
+
+    public static void main(String[] args) {
 
 
         List<Persona> personas = new ArrayList<>();
         List<Partido> partidos = new ArrayList<>();
-        Persona persona = new Persona();
         List<Ronda> rondas = new ArrayList<>();
-        Ronda ronda = new Ronda();
 
 
-        leerResultados(dirResultados, ronda, rondas, partidos);
-        leerPronosticos(dirPronosticos, persona, personas);
+        leerResultados(rondas, partidos);
+        leerPronosticos(personas);
         asignarPuntos(personas, rondas, partidos);
         mostrarPuntos(personas);
 
 
     }
 
-    public static void leerResultados(Path dirResultados, Ronda ronda, List<Ronda> rondas, List<Partido> partidos) throws Exception {
-        String[] arrPartidos;
-        for (String linea : Files.readAllLines(dirResultados)) {
+    public static void leerResultados(List<Ronda> rondas, List<Partido> partidos) {
+        Ronda ronda = new Ronda();
 
-            arrPartidos = linea.split(";");
+        Statement stmt = null;
+        ResultSet rs = null;
 
-            if (arrPartidos.length != 5) {
-                System.out.println("Cantidad de campos incorrectas en archivo resultados.");
-            }
-            try {
-                int num1 = Integer.parseInt(arrPartidos[2]);
-                int num2 = Integer.parseInt(arrPartidos[3]);
+        try {
+            cargarClase();
 
-            } catch (NumberFormatException e) {
-                System.out.println("Los goles no son números enteros");
-            }
+            Connection c = DriverManager.getConnection("jdbc:mysql://db4free.net/db_integrador", "manupe", "manupe2003");
 
-            int ronda1 = Integer.parseInt(arrPartidos[0]);
+            stmt = c.createStatement();
 
-            if (ronda1 != ronda.getNro()) {
-                if (ronda.getNro() != 0) {
-                    rondas.add(ronda);
+            rs = stmt.executeQuery("SELECT * FROM partido");
+
+            while (rs.next()) {
+                int numeroRonda = rs.getInt("ronda");
+                String eq1 = rs.getString("equipo1");
+                int cant_goles1 = rs.getInt("cant_goles1");
+                int cant_goles2 = rs.getInt("cant_goles2");
+                String eq2 = rs.getString("equipo2");
+
+                if (numeroRonda != ronda.getNro()) {
+                    if (ronda.getNro() != 0) {
+                        rondas.add(ronda);
+                    }
+                    ronda = new Ronda();
+                    ronda.setNro(numeroRonda);
                 }
-                ronda = new Ronda();
-                ronda.setNro(Integer.parseInt(arrPartidos[0]));
 
+                Equipo equipo1 = new Equipo(eq1);
+                Equipo equipo2 = new Equipo(eq2);
+
+                Partido partido = new Partido(equipo1, equipo2, cant_goles1, cant_goles2);
+
+                partidos.add(partido);
+                ronda.setPartidos(partido);
             }
-            int golesEq1 = Integer.parseInt(arrPartidos[2]);
-            int golesEq2 = Integer.parseInt(arrPartidos[3]);
+            rondas.add(ronda);
 
 
-            Equipo equipo1 = new Equipo(arrPartidos[1]);
-            Equipo equipo2 = new Equipo(arrPartidos[4]);
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
 
-            Partido partido = new Partido(equipo1, equipo2, golesEq1, golesEq2);
-            partidos.add(partido);
-            ronda.setPartidos(partido);
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
         }
-        rondas.add(ronda);
-
     }
 
-    public static void leerPronosticos(Path dirPronosticos, Persona persona, List<Persona> personas) throws Exception {
+    public static void leerPronosticos(List<Persona> personas) {
+        Persona persona = new Persona();
+        Statement stmt = null;
+        ResultSet rs = null;
 
-        String[] arrPronosticos;
-        for (String lin : Files.readAllLines(dirPronosticos)) {
+        try {
+            cargarClase();
 
-            arrPronosticos = lin.split(";");
+            Connection c = DriverManager.getConnection("jdbc:mysql://db4free.net/db_integrador", "manupe", "manupe2003");
 
-            Equipo equipo = new Equipo(arrPronosticos[1]);
+            stmt = c.createStatement();
 
-            ResultadoEnum resultado = null;
+            rs = stmt.executeQuery("SELECT * FROM pronostico");
 
-            if (arrPronosticos[2].equals("X")) {
-                resultado = ResultadoEnum.GANAEQUIPO1;
-            } else if (arrPronosticos[3].equals("X")) {
-                resultado = ResultadoEnum.EMPATE;
-            } else if (arrPronosticos[4].equals("X")) {
-                resultado = ResultadoEnum.GANAEQUIPO2;
-            }
+            while (rs.next()) {
+                String eq = rs.getString("equipo1");
+                String nombre = rs.getString("participante");
+                int gana1 = rs.getInt("gana1");
+                int empata = rs.getInt("empata");
+                int gana2 = rs.getInt("gana2");
 
-            Pronostico pronostico = new Pronostico(equipo, resultado);
+                Equipo equipo = new Equipo(eq);
 
-            String nombre = arrPronosticos[0];
+                ResultadoEnum resultado = null;
 
-            if (!nombre.equals(persona.getNombre())) {
-                if (persona.getNombre() != null) {
-                    personas.add(persona);
+                if (gana1 == 1) {
+                    resultado = ResultadoEnum.GANAEQUIPO1;
+                } else if (empata == 1) {
+                    resultado = ResultadoEnum.EMPATE;
+                } else if (gana2 == 1) {
+                    resultado = ResultadoEnum.GANAEQUIPO2;
                 }
-                persona = new Persona();
-                persona.setNombre(nombre);
+
+                Pronostico pronostico = new Pronostico(equipo, resultado);
+
+                if (!nombre.equals(persona.getNombre())) {
+                    if (persona.getNombre() != null) {
+                        personas.add(persona);
+                    }
+                    persona = new Persona();
+                    persona.setNombre(nombre);
+                }
+                persona.setPronosticos(pronostico);
             }
-            persona.setPronosticos(pronostico);
+            personas.add(persona);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
         }
-        personas.add(persona);
     }
+
 
     public static void asignarPuntos(List<Persona> personas, List<Ronda> rondas, List<Partido> partidos) {
+        final int puntosPorAcertar = 3;
+        final int puntosRondaCompleta = 1;
         int puntos;
+        int aciertos;
         int cantPersonas = personas.size();
         int cantPartidos = partidos.size();
         int cantRondas = rondas.size();
@@ -115,10 +163,18 @@ public class Main {
 
         for (int i = 0; i < cantPersonas; i++) {
             puntos = 0;
+            aciertos = 0;
             for (int z = 0; z < cantRondas; z++) {
                 for (int j = 0; j < cantPartidos; j++) {
-                    puntos += personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(), personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos());
+                    puntos = puntos + (personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(),
+                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos())) * puntosPorAcertar;
+                    aciertos += (personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(),
+                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos()));
                 }
+                if (aciertos == cantPartidos) {
+                    puntos = puntos + puntosRondaCompleta;
+                }
+                aciertos = 0;
             }
             personas.get(i).setPuntos(puntos);
         }
@@ -128,5 +184,9 @@ public class Main {
         for (Persona p : personas) {
             System.out.println(p.getNombre() + " tiene: " + p.getPuntos() + " puntos");
         }
+    }
+
+    public static void cargarClase() throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
     }
 }

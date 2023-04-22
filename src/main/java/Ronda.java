@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Ronda {
+
     private final List<Partido> partidos;
     private int nro;
 
