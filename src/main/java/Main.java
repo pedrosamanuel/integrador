@@ -18,7 +18,6 @@ public class Main {
         asignarPuntos(personas, rondas, partidos);
         mostrarPuntos(personas);
 
-
     }
 
     public static void leerResultados(List<Ronda> rondas, List<Partido> partidos) {
@@ -65,21 +64,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
         } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
+            cerrarConex(rs, stmt);
         }
     }
 
@@ -132,24 +117,9 @@ public class Main {
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
         } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
+            cerrarConex(rs, stmt);
         }
     }
-
 
     public static void asignarPuntos(List<Persona> personas, List<Ronda> rondas, List<Partido> partidos) {
         final int puntosPorAcertar = 3;
@@ -188,5 +158,23 @@ public class Main {
 
     public static void cargarClase() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+    }
+
+    public static void cerrarConex(ResultSet rs, Statement stmt) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 }
