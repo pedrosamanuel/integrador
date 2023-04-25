@@ -29,7 +29,7 @@ public class Main {
         try {
             cargarClase();
 
-            Connection c = DriverManager.getConnection("jdbc:mysql://db4free.net/db_integrador", "manupe", "manupe2003");
+            Connection c = DriverManager.getConnection("jdbc:mysql://db4free.net/db_integrador", "manupe", "manupe2003"); //conectamos a db
 
             stmt = c.createStatement();
 
@@ -44,10 +44,10 @@ public class Main {
 
                 if (numeroRonda != ronda.getNro()) {
                     if (ronda.getNro() != 0) {
-                        rondas.add(ronda);
+                        rondas.add(ronda); //añade a la lista de rondas cuando cambia a la siguiente
                     }
                     ronda = new Ronda();
-                    ronda.setNro(numeroRonda);
+                    ronda.setNro(numeroRonda); //crea ronda cuando no es repetida
                 }
 
                 Equipo equipo1 = new Equipo(eq1);
@@ -58,7 +58,7 @@ public class Main {
                 partidos.add(partido);
                 ronda.setPartidos(partido);
             }
-            rondas.add(ronda);
+            rondas.add(ronda); //añade la ronda que quedo sin añadir
 
 
         } catch (Exception e) {
@@ -99,20 +99,20 @@ public class Main {
                     resultado = ResultadoEnum.EMPATE;
                 } else if (gana2 == 1) {
                     resultado = ResultadoEnum.GANAEQUIPO2;
-                }
+                } //asigna enum
 
                 Pronostico pronostico = new Pronostico(equipo, resultado);
 
                 if (!nombre.equals(persona.getNombre())) {
                     if (persona.getNombre() != null) {
-                        personas.add(persona);
+                        personas.add(persona); //añade la persona a la lista cuando empieza con la otra persona
                     }
                     persona = new Persona();
-                    persona.setNombre(nombre);
+                    persona.setNombre(nombre); //crea la persona cuando no se repite
                 }
                 persona.setPronosticos(pronostico);
             }
-            personas.add(persona);
+            personas.add(persona); //añade la persona que quedo sin añadir
 
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
@@ -137,18 +137,18 @@ public class Main {
             for (int z = 0; z < cantRondas; z++) {
                 for (int j = 0; j < cantPartidos; j++) {
                     puntos = puntos + (personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(),
-                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos())) * puntosPorAcertar;
+                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos())) * puntosPorAcertar; // asigna puntos
                     aciertos += (personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(),
-                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos()));
+                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos())); //asigna aciertos
                 }
                 if (aciertos == cantPartidos) {
-                    puntos = puntos + puntosRondaCompleta;
+                    puntos = puntos + puntosRondaCompleta; //suma puntos por acertar todos los partidos de la ronda
                 }
                 aciertos = 0;
             }
             personas.get(i).setPuntos(puntos);
         }
-    }
+    } //recorre en orden personas, rondas, partidos
 
     public static void mostrarPuntos(List<Persona> personas) {
         for (Persona p : personas) {
