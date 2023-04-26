@@ -18,10 +18,8 @@ public class Partido {
             return ResultadoEnum.GANAEQUIPO1;
         } else if (golesEquipo2 > golesEquipo1) {
             return ResultadoEnum.GANAEQUIPO2;
-        } else if (golesEquipo1 == golesEquipo2) {
+        } else  {
             return ResultadoEnum.EMPATE;
-        } else {
-            return null;
         }
     }
 

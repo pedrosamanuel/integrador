@@ -37,14 +37,6 @@ public class Persona {
         this.nombre = nombre;
     }
 
-    public int puntos(ResultadoEnum resultado, ResultadoEnum pronostico, int puntos) {
-
-        if (resultado == pronostico) {
-            puntos++;
-        }
-        return puntos;
-    }
-
     public int getPuntos() {
         return puntos;
     }

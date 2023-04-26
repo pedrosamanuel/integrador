@@ -43,11 +43,11 @@ public class Main {
                 String eq2 = rs.getString("equipo2");
 
                 if (numeroRonda != ronda.getNro()) {
+                    ronda = new Ronda();
+                    ronda.setNro(numeroRonda); //crea ronda cuando no es repetida
                     if (ronda.getNro() != 0) {
                         rondas.add(ronda); //añade a la lista de rondas cuando cambia a la siguiente
                     }
-                    ronda = new Ronda();
-                    ronda.setNro(numeroRonda); //crea ronda cuando no es repetida
                 }
 
                 Equipo equipo1 = new Equipo(eq1);
@@ -55,11 +55,9 @@ public class Main {
 
                 Partido partido = new Partido(equipo1, equipo2, cant_goles1, cant_goles2);
 
-                partidos.add(partido);
-                ronda.setPartidos(partido);
+                partidos.add(partido); //añade el partido a la lista partidos
+                ronda.setPartidos(partido); //añade el partido a la lista rondas
             }
-            rondas.add(ronda); //añade la ronda que quedo sin añadir
-
 
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
@@ -91,28 +89,20 @@ public class Main {
 
                 Equipo equipo = new Equipo(eq);
 
-                ResultadoEnum resultado = null;
-
-                if (gana1 == 1) {
-                    resultado = ResultadoEnum.GANAEQUIPO1;
-                } else if (empata == 1) {
-                    resultado = ResultadoEnum.EMPATE;
-                } else if (gana2 == 1) {
-                    resultado = ResultadoEnum.GANAEQUIPO2;
-                } //asigna enum
+                ResultadoEnum resultado = asignarEnum(gana1, gana2, empata);
 
                 Pronostico pronostico = new Pronostico(equipo, resultado);
 
                 if (!nombre.equals(persona.getNombre())) {
+                    persona = new Persona();
+                    persona.setNombre(nombre);//crea la persona cuando no se repite
                     if (persona.getNombre() != null) {
                         personas.add(persona); //añade la persona a la lista cuando empieza con la otra persona
                     }
-                    persona = new Persona();
-                    persona.setNombre(nombre); //crea la persona cuando no se repite
                 }
-                persona.setPronosticos(pronostico);
+
+                persona.setPronosticos(pronostico); //asigna el pronostico a la persona
             }
-            personas.add(persona); //añade la persona que quedo sin añadir
 
         } catch (Exception e) {
             System.out.println("ERROR: " + e.getMessage());
@@ -122,37 +112,56 @@ public class Main {
     }
 
     public static void asignarPuntos(List<Persona> personas, List<Ronda> rondas, List<Partido> partidos) {
-        final int puntosPorAcertar = 3;
-        final int puntosRondaCompleta = 1;
         int puntos;
         int aciertos;
-        int cantPersonas = personas.size();
         int cantPartidos = partidos.size();
         int cantRondas = rondas.size();
         cantPartidos = cantPartidos / cantRondas;
 
-        for (int i = 0; i < cantPersonas; i++) {
+        for (Persona persona : personas) {
             puntos = 0;
             aciertos = 0;
             for (int z = 0; z < cantRondas; z++) {
                 for (int j = 0; j < cantPartidos; j++) {
-                    puntos = puntos + (personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(),
-                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos())) * puntosPorAcertar; // asigna puntos
-                    aciertos += (personas.get(i).puntos(rondas.get(z).getPartidos(j).resultado(),
-                            personas.get(i).getPronosticos(j + z * cantPartidos).getResultado(), personas.get(i).getPuntos())); //asigna aciertos
+                    if (comparar(persona.getPronosticos(j + z * cantPartidos).getResultado(), rondas.get(z).getPartidos(j).resultado())) {
+                        aciertos++;
+                    }
                 }
-                if (aciertos == cantPartidos) {
-                    puntos = puntos + puntosRondaCompleta; //suma puntos por acertar todos los partidos de la ronda
-                }
+                puntos = sumaPuntos(puntos,aciertos,cantPartidos);
                 aciertos = 0;
             }
-            personas.get(i).setPuntos(puntos);
+            persona.setPuntos(puntos);
         }
     } //recorre en orden personas, rondas, partidos
+    public static boolean comparar(ResultadoEnum resultado, ResultadoEnum pronostico) {
+
+        return resultado == pronostico;
+
+    }
+    public static int sumaPuntos(int puntos, int aciertos,  int cantPartidos){
+        final int puntosPorAcertar = 3;
+        final int puntosRondaCompleta = 1;
+        puntos += aciertos * puntosPorAcertar; //suma los puntos que da cada acierto
+        if (aciertos == cantPartidos) {
+            puntos +=  puntosRondaCompleta; //suma puntos por acertar todos los partidos de la ronda
+        }
+        return puntos;
+    }
 
     public static void mostrarPuntos(List<Persona> personas) {
         for (Persona p : personas) {
             System.out.println(p.getNombre() + " tiene: " + p.getPuntos() + " puntos");
+        }
+    }
+    static ResultadoEnum asignarEnum(int gana1, int gana2, int empata){
+        if (gana1 == 1) {
+            return ResultadoEnum.GANAEQUIPO1;
+        } else if (empata == 1) {
+            return ResultadoEnum.EMPATE;
+        } else if (gana2 == 1) {
+            return ResultadoEnum.GANAEQUIPO2;
+        }else {
+            return null;
         }
     }
 
